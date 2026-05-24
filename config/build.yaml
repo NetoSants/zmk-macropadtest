@@ -3,4 +3,3 @@ builds:
   - name: macropadzada
     board: nice_nano_v2
     shield: macropadzada
-    
