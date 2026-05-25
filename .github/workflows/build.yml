@@ -5,10 +5,16 @@ on:
     paths:
       - ".github/workflows/build.yml"
       - "app/**"
+    paths-ignore:
+      - "app/boards/shields/macropadzada/**"
+      - "config/**"
   pull_request:
     paths:
       - ".github/workflows/build.yml"
       - "app/**"
+    paths-ignore:
+      - "app/boards/shields/macropadzada/**"
+      - "config/**"
   schedule:
     - cron: "22 4 * * *"
 
