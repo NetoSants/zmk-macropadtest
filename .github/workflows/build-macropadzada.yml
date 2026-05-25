@@ -1,0 +1,60 @@
+name: Build Macropadzada
+
+on:
+  push:
+    paths:
+      - 'app/boards/shields/macropadzada/**'
+      - 'config/**'
+      - '.github/workflows/build-macropadzada.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: zmkfirmware/zmk-build-arm:stable
+    name: Build macropadzada (nice_nano_v2)
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Cache west modules
+        uses: actions/cache@v5
+        continue-on-error: true
+        env:
+          cache_name: cache-zephyr-modules
+        with:
+          path: |
+            modules/
+            tools/
+            zephyr/
+            bootloader/
+          key: ${{ runner.os }}-build-${{ env.cache_name }}-${{ hashFiles('app/west.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache_name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      - name: West Init
+        run: west init -l app
+
+      - name: West Update
+        run: west update --fetch-opt=--filter=tree:0
+
+      - name: West Zephyr Export
+        run: west zephyr-export
+
+      - name: Build (nice_nano_v2 + macropadzada)
+        run: |
+          west build -s app -b nice_nano_v2 -d build/macropadzada -- -DSHIELD=macropadzada
+
+      - name: Rename artifact
+        run: |
+          mkdir -p build/artifacts
+          cp build/macropadzada/zephyr/zmk.uf2 build/artifacts/macropadzada-nice_nano_v2-zmk.uf2
+
+      - name: Upload firmware
+        uses: actions/upload-artifact@v7
+        with:
+          name: macropadzada-nice_nano_v2-zmk
+          path: build/artifacts/
