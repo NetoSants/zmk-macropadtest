@@ -7,6 +7,11 @@ on:
       - 'config/**'
       - '.github/workflows/build-macropadzada.yml'
   workflow_dispatch:
+    inputs:
+      clear_bonds:
+        description: 'Limpar bonds Bluetooth (reset BLE)'
+        type: boolean
+        default: false
 
 jobs:
   build:
@@ -44,14 +49,24 @@ jobs:
       - name: West Zephyr Export
         run: west zephyr-export
 
-      - name: Build (nice_nano_v2 + macropadzada)
+      - name: Build normal
+        if: ${{ !inputs.clear_bonds }}
         run: |
           west build -s app -b nice_nano_v2 -d build/macropadzada -- -DSHIELD=macropadzada
+
+      - name: Build com clear bonds
+        if: ${{ inputs.clear_bonds }}
+        run: |
+          west build -s app -b nice_nano_v2 -d build/macropadzada -- -DSHIELD=macropadzada -DCONFIG_ZMK_BLE_CLEAR_BONDS=y
 
       - name: Rename artifact
         run: |
           mkdir -p build/artifacts
-          cp build/macropadzada/zephyr/zmk.uf2 build/artifacts/macropadzada-nice_nano_v2-zmk.uf2
+          SUFFIX=""
+          if [[ "${{ inputs.clear_bonds }}" == "true" ]]; then
+            SUFFIX="-clear-bonds"
+          fi
+          cp build/macropadzada/zephyr/zmk.uf2 "build/artifacts/macropadzada-nice_nano_v2-zmk${SUFFIX}.uf2"
 
       - name: Upload firmware
         uses: actions/upload-artifact@v7
