@@ -14,11 +14,7 @@
                 &kp L       &kp M       &kp N
                 &kp O       &kp P       &kp Q
             >;
-            sensor-bindings = <
-                &inc PG_UP PG_DN
-                &inc C_VOL_DN C_VOL_UP
-                &inc LEFT RIGHT
-            >;
+            sensor-bindings = <&inc_dec_kp PG_UP PG_DN &inc_dec_kp C_VOL_DN C_VOL_UP &inc_dec_kp LEFT RIGHT>;
         };
     };
 };
